@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.util.*; 
+
 public class ABChess {
 	static String chessBoard[][]={
 		{"r","k","b","q","a","b","k","r"},
@@ -13,33 +14,44 @@ public class ABChess {
 	//A is for the king, since k is taken by the Knight
 
 	static int kingPositionC,kingPositionL;		//Capital and Lowercase king
+	static int playingWhite=-1; 					//1=player is white, 0= player is black;
 	static int globalDepth=4;
 
 	public static void main(String[] args) {
 		while (!"A".equals(chessBoard[kingPositionC/8][kingPositionC%8])) {kingPositionC++;}//get King's location
-		while (!"a".equals(chessBoard[kingPositionL/8][kingPositionL%8])) {kingPositionL++;}//get king's location
-		/*
-		JFrame frame = new JFrame("CHESS");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		UserInterface ui=new UserInterface();
-		frame.add(ui);
-		frame.setSize(500, 500);
-		frame.setVisible(true);
-		 */
-		System.out.println(posibleMoves());
-		makeMove(alphaBeta(globalDepth, 1000000,-1000000,"", 0));
-		for (int i=0;i<8;i++) {
-			System.out.println(Arrays.toString(chessBoard[i]));
-		}
-
-	}
+        while (!"a".equals(chessBoard[kingPositionL/8][kingPositionL%8])) {kingPositionL++;}//get king's location
+        
+        JFrame f=new JFrame("Chess Tutorial");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        UserInterface ui=new UserInterface();
+        f.add(ui);
+        f.setSize(500, 500);
+        f.setVisible(true);
+        
+        System.out.println(posibleMoves());
+        Object[] option={"Computer","Human"};
+        playingWhite=JOptionPane.showOptionDialog(null, "Who should play as white?", "ABC Options", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+        if (playingWhite==0) {
+        	long startTime=System.currentTimeMillis();
+            makeMove(alphaBeta(globalDepth, 1000000, -1000000, "", 0));
+            long endTime=System.currentTimeMillis();
+            System.out.println("Time: "+(endTime-startTime) + "ms");
+            flipBoard();
+            f.repaint();
+        }
+        for (int i=0;i<8;i++) {
+            System.out.println(Arrays.toString(chessBoard[i]));
+        }
+    }
 
 	public static String alphaBeta(int depth, int beta, int alpha, String move, int player) {
 		//return in the form of 1234b##########
 		String list=posibleMoves();
-		if (depth==0 || list.length()==0) {return move+(rating()*(player*2-1));}
-		//sort later
+		if (depth==0 || list.length()==0) {return move+(Rating.rating(list.length(), depth)*(player*2-1));}
+		list=sort(list);
 		player=1-player;	//either 1 or 0
+		
 		for (int i=0;i<list.length();i+=5) {
 			makeMove(list.substring(i,i+5));
 			flipBoard();
@@ -58,6 +70,7 @@ public class ABChess {
 		}
 		if (player==0) {return move+beta;} else {return move+alpha;}
 	}
+	
 	public static void flipBoard() {
 		String temp;
 		for (int i=0;i<32;i++) {
@@ -81,56 +94,52 @@ public class ABChess {
 
 	public static void makeMove(String move) {
 		if (move.charAt(4)!='P') {
-			chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))]
-					=chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))];
-			chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))]=" ";
-		if("A".equals(chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))])){
-			kingPositionC = 8*Character.getNumericValue(move.charAt(0))+Character.getNumericValue(move.charAt(1));
-		}
-		} else {
-			//if pawn promotion
-			chessBoard[1][Character.getNumericValue(move.charAt(0))]=" ";
-			chessBoard[0][Character.getNumericValue(move.charAt(1))]=String.valueOf(move.charAt(3));
-		}
-	}
+            chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))]
+            		=chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))];
+            chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))]=" ";
+            if ("A".equals(chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))])) {
+                kingPositionC=8*Character.getNumericValue(move.charAt(2))+Character.getNumericValue(move.charAt(3));
+            }
+        } else {
+            //if pawn promotion
+            chessBoard[1][Character.getNumericValue(move.charAt(0))]=" ";
+            chessBoard[0][Character.getNumericValue(move.charAt(1))]=String.valueOf(move.charAt(3));
+        }
+    }
 	
-
-
 	public static void undoMove(String move){
 		if (move.charAt(4)!='P') {
-			chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))]
-					=chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))];
-			chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))]
-					=String.valueOf(move.charAt(4));
-			if("A".equals(chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))])){
-				kingPositionC = 8*Character.getNumericValue(move.charAt(2))+Character.getNumericValue(move.charAt(3));
-			}
-		} else {
-			//if pawn promotion
-			chessBoard[1][Character.getNumericValue(move.charAt(0))]="P";
-			chessBoard[0][Character.getNumericValue(move.charAt(1))]=String.valueOf(move.charAt(2));
-		}
-	}
-
+            chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))]
+            		=chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))];
+            chessBoard[Character.getNumericValue(move.charAt(2))][Character.getNumericValue(move.charAt(3))]
+            		=String.valueOf(move.charAt(4));
+            if ("A".equals(chessBoard[Character.getNumericValue(move.charAt(0))][Character.getNumericValue(move.charAt(1))])) {
+                kingPositionC=8*Character.getNumericValue(move.charAt(0))+Character.getNumericValue(move.charAt(1));
+            }
+        } else {
+            //if pawn promotion
+            chessBoard[1][Character.getNumericValue(move.charAt(0))]="P";
+            chessBoard[0][Character.getNumericValue(move.charAt(1))]=String.valueOf(move.charAt(2));
+        }
+    }
 	
-public static String posibleMoves(){
+	public static String posibleMoves(){
 		String list="";
 		for(int i=0;i<64;i++){
 			switch (chessBoard[i/8][i%8]){
 
 			case("P"):list+=possibleP(i);
-			break;
+				break;
 			case("R"):list+=possibleR(i);
-			break;
+				break;
 			case("K"):list+=possibleK(i);
-			break;
+				break;
 			case("B"):list+=possibleB(i);
-			break;
+				break;
 			case("Q"):list+=possibleQ(i);
-			break;
+				break;
 			case("A"):list+=possibleA(i);
-			break;
-
+				break;
 
 			}
 		}
@@ -212,6 +221,7 @@ public static String posibleMoves(){
 		} catch (Exception e) {}
 		return list;
 	}
+	
 	public static String possibleR(int i) {
 		String list="", oldPiece;
 		int r=i/8, c=i%8;
@@ -338,6 +348,7 @@ public static String posibleMoves(){
 		}
 		return list;
 	}
+	
 	public static String possibleQ(int i){
 		String list ="", oldPiece;
 		int r=i/8,c=i%8;
@@ -377,6 +388,7 @@ public static String posibleMoves(){
 
 		return list;
 	}
+	
 	public static String possibleA(int i){
 		String list ="", oldPiece;
 		int r=i/8,c=i%8;
@@ -403,9 +415,7 @@ public static String posibleMoves(){
 		return list;
 		//Need to add Castling move
 	}
-	public static int rating() {
-		return 0;
-	}
+	
 	public static boolean kingSafe(){
 		//bishop/queen
 		int temp=1;
@@ -482,4 +492,25 @@ public static String posibleMoves(){
 		}
 		return true;
 	}
+
+	public static String sort(String list) {
+        int[] score=new int [list.length()/5];
+        for (int i=0;i<list.length();i+=5) {
+            makeMove(list.substring(i, i+5));
+            score[i/5]=-Rating.rating(-1, 0);
+            undoMove(list.substring(i, i+5));
+        }
+        String newListA="", newListB=list;
+        for (int i=0;i<Math.min(6, list.length()/5);i++) {//first few moves only
+            int max=-1000000, maxLocation=0;
+            for (int j=0;j<list.length()/5;j++) {
+                if (score[j]>max) {max=score[j]; maxLocation=j;}
+            }
+            score[maxLocation]=-1000000;
+            newListA+=list.substring(maxLocation*5,maxLocation*5+5);
+            newListB=newListB.replace(list.substring(maxLocation*5,maxLocation*5+5), "");
+        }
+        return newListA+newListB;
+    }
+
 }
