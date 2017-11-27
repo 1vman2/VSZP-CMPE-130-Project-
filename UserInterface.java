@@ -8,7 +8,7 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 	static int squareSize=64;
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		this.setBackground(Color.blue);
+		this.setBackground(new Color(0, 0, 0));
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		for(int i=0;i<64;i+= 2){ //creating the tiles of the chessboard
@@ -23,7 +23,7 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 		//startlocation, endlocation, currentlocation
 		for(int i=0;i<64;i++){
 			int j =-1, k=-1;
-            switch (AlphaBetaChess.chessBoard[i/8][i%8]) {
+            switch (ABChess.chessBoard[i/8][i%8]) {
             case "P": j=5; k=0;
                 break;
             case "p": j=5; k=1;
@@ -81,22 +81,22 @@ public class UserInterface extends JPanel implements MouseListener, MouseMotionL
 			newMouseY=e.getY();
 			if (e.getButton()==MouseEvent.BUTTON1){
 				String dragMove;
-				if(newMouseY/squareSize==0 && mouseY/squareSize==1 && "P".equals(AlphaBetaChess.chessBoard[mouseY/squareSize][mouseX/squareSize])){
+				if(newMouseY/squareSize==0 && mouseY/squareSize==1 && "P".equals(ABChess.chessBoard[mouseY/squareSize][mouseX/squareSize])){
 					//pawn promotion 
-					 dragMove= ""+mouseX/squareSize + newMouseX/squareSize +AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize]+"QP"; // this is used to track the drag move
+					 dragMove= ""+mouseX/squareSize + newMouseX/squareSize +ABChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize]+"QP"; // this is used to track the drag move
 
 				}else{
 					//like normal
-					dragMove= ""+mouseY/squareSize + mouseX/squareSize + newMouseY/squareSize + newMouseX/squareSize+AlphaBetaChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize]; // this is used to track the drag move
+					dragMove= ""+mouseY/squareSize + mouseX/squareSize + newMouseY/squareSize + newMouseX/squareSize+ABChess.chessBoard[newMouseY/squareSize][newMouseX/squareSize]; // this is used to track the drag move
 
 				}
-				String userPosibilities = AlphaBetaChess.posibleMoves();
+				String userPosibilities = ABChess.posibleMoves();
 				
 				if(userPosibilities.replaceAll(dragMove, "").length()<userPosibilities.length()){ //back and forth between comp and human
-					AlphaBetaChess.makeMove(dragMove);
-					AlphaBetaChess.flipBoard();
-					AlphaBetaChess.makeMove(AlphaBetaChess.alphaBeta(AlphaBetaChess.globalDepth, 1000000, -1000000, "", 0));
-					AlphaBetaChess.flipBoard();
+					ABChess.makeMove(dragMove);
+					ABChess.flipBoard();
+					ABChess.makeMove(ABChess.alphaBeta(ABChess.globalDepth, 1000000, -1000000, "", 0));
+					ABChess.flipBoard();
 					repaint();
 				} 
 			}

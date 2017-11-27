@@ -1,5 +1,6 @@
+
 public class Rating {
-    static int pawnBoard[][]={//attribute to http://chessprogramming.wikispaces.com/Simplified+evaluation+function
+    static int pawnOnBoard[][]={//attribute to http://chessprogramming.wikispaces.com/Simplified+evaluation+function
         { 0,  0,  0,  0,  0,  0,  0,  0},
         {50, 50, 50, 50, 50, 50, 50, 50},
         {10, 10, 20, 30, 30, 20, 10, 10},
@@ -8,7 +9,7 @@ public class Rating {
         { 5, -5,-10,  0,  0,-10, -5,  5},
         { 5, 10, 10,-20,-20, 10, 10,  5},
         { 0,  0,  0,  0,  0,  0,  0,  0}};
-    static int rookBoard[][]={
+    static int rookOnBoard[][]={
         { 0,  0,  0,  0,  0,  0,  0,  0},
         { 5, 10, 10, 10, 10, 10, 10,  5},
         {-5,  0,  0,  0,  0,  0,  0, -5},
@@ -17,7 +18,7 @@ public class Rating {
         {-5,  0,  0,  0,  0,  0,  0, -5},
         {-5,  0,  0,  0,  0,  0,  0, -5},
         { 0,  0,  0,  5,  5,  0,  0,  0}};
-    static int knightBoard[][]={
+    static int knightOnBoard[][]={
         {-50,-40,-30,-30,-30,-30,-40,-50},
         {-40,-20,  0,  0,  0,  0,-20,-40},
         {-30,  0, 10, 15, 15, 10,  0,-30},
@@ -26,7 +27,7 @@ public class Rating {
         {-30,  5, 10, 15, 15, 10,  5,-30},
         {-40,-20,  0,  5,  5,  0,-20,-40},
         {-50,-40,-30,-30,-30,-30,-40,-50}};
-    static int bishopBoard[][]={
+    static int bishopOnBoard[][]={
         {-20,-10,-10,-10,-10,-10,-10,-20},
         {-10,  0,  0,  0,  0,  0,  0,-10},
         {-10,  0,  5, 10, 10,  5,  0,-10},
@@ -35,7 +36,7 @@ public class Rating {
         {-10, 10, 10, 10, 10, 10, 10,-10},
         {-10,  5,  0,  0,  0,  0,  5,-10},
         {-20,-10,-10,-10,-10,-10,-10,-20}};
-    static int queenBoard[][]={
+    static int queenOnBoard[][]={
         {-20,-10,-10, -5, -5,-10,-10,-20},
         {-10,  0,  0,  0,  0,  0,  0,-10},
         {-10,  0,  5,  5,  5,  5,  0,-10},
@@ -62,110 +63,122 @@ public class Rating {
         {-30,-10, 20, 30, 30, 20,-10,-30},
         {-30,-30,  0,  0,  0,  0,-30,-30},
         {-50,-30,-30,-30,-30,-30,-30,-50}};
-    
-    public static int rating(int list, int depth) {
-        int counter=0, material=rateMaterial();
-        counter+=rateAttack();
+    public static int rate(int list, int depth) {// designed to keep track of who is winning
+    	int counter= 0, material= rateMaterial();
+    	counter+= rateAttack();
         counter+=material;
-        counter+=rateMoveablitly(list, depth, material);
-        counter+=ratePositional(material);
-      
-        ABChess.flipBoard();
-        material=rateMaterial();
-        counter-=rateAttack();
-        counter-=material;
-        counter-=rateMoveablitly(list, depth, material);
-        counter-=ratePositional(material);
-        ABChess.flipBoard();
+    	counter+= rateMaterial();
+    	counter+= rateMoveable(list, depth, material);
+    	counter+= ratePosition(material);
+    	ABChess.flipBoard();
+    	counter-= rateAttack();
+        counter-= material;
+    	counter-= rateMaterial();
+    	counter-= rateMoveable(list, depth, material);
+    	counter-= ratePosition(material);    	
+    	ABChess.flipBoard();
+   	
         return -(counter+depth*50);
     }
-    
-    public static int rateAttack() {
-        int counter=0;
-        int tempPositionC=ABChess.kingPositionC;
-      
+    public static int rateAttack() { //logic revolving around attack
+        int counter= 0;
+        int tempPositionC= ABChess.kingPositionC;
         for (int i=0;i<64;i++) {
             switch (ABChess.chessBoard[i/8][i%8]) {
-                case "P": {ABChess.kingPositionC=i; if (!ABChess.kingSafe()) counter-=64;}
+                case "P": {
+                	ABChess.kingPositionC=i; //is the king safe?
+                	if(!ABChess.kingSafe()){
+                		counter-=32/2;
+                	}
+                }
                     break;
-                case "R": {ABChess.kingPositionC=i; if (!ABChess.kingSafe()) counter-=500;}
+                case "R": {
+                	ABChess.kingPositionC=i; //is the king safe?
+                	if(!ABChess.kingSafe()){
+                		counter-=500/2;
+                	}
+                }
                     break;
-                case "K": {ABChess.kingPositionC=i; if (!ABChess.kingSafe()) counter-=300;}
+                case "K": {
+                	ABChess.kingPositionC=i; //is the king safe?
+                	if(!ABChess.kingSafe()){
+                		counter-=300/2;
+                	}
+                }
                     break;
-                case "B": {ABChess.kingPositionC=i; if (!ABChess.kingSafe()) counter-=300;}
+                case "B": {
+                	ABChess.kingPositionC=i; //is the king safe?
+                	if(!ABChess.kingSafe()){
+                		counter-=300/2;
+                	}
+                }
                     break;
-                case "Q": {ABChess.kingPositionC=i; if (!ABChess.kingSafe()) counter-=900;}
+                case "Q": {
+                	ABChess.kingPositionC=i; //is the king safe?
+                	if(!ABChess.kingSafe()){
+                		counter-=900/2;
+                	}
+                }
                     break;
             }
         }
-        
-        ABChess.kingPositionC=tempPositionC;
-        if (!ABChess.kingSafe()) {counter-=200;}
-        return counter/2;
+        ABChess.kingPositionC= tempPositionC;
+        if(!ABChess.kingSafe()) counter-=200;
+    	return counter;
+    }
+    public static int rateMaterial() { //logic around pieces
+        int counter= 0, bishopCnt= 0;
+        for(int i=0;i<64;i++){
+        	switch (ABChess.chessBoard[i/8][i%8]){
+        	case "P": counter+=100; //worth 100 centi pawns
+        		break;
+        	case "R": counter+=500;
+        		break;
+        	case "K": counter+=300;
+    			break;
+        	case "B": bishopCnt+=1;
+    			break;
+        	case "Q": counter+=900;
+    			break;
+
+        	}
+        }
+        if(bishopCnt>=2) counter+=300*bishopCnt;
+        else counter+=250*bishopCnt;
+    	return counter;
+    }
+    public static int rateMoveable(int listLength, int depth, int material) { //rate how much its able to move
+        int counter= 0;
+        counter+=listLength; // 5 points per valid move
+        if(listLength==0){
+        	if(!ABChess.kingSafe()){
+        		counter+=-(20*1000000)*depth; //Checkmate: very bad situation
+        	}else{
+        		counter+=-(10*1000000)*depth; // Stalemate: not so bad situation
+        	}
+        }
+    	return counter;
+    }
+    public static int ratePosition(int material) { //should this piece be here
+    	 int counter=0;
+         for (int i=0;i<64;i++) {
+             switch (ABChess.chessBoard[i/8][i%8]) {
+                 case "P": counter+=pawnOnBoard[i/8][i%8];
+                     break;
+                 case "R": counter+=rookOnBoard[i/8][i%8];
+                     break;
+                 case "K": counter+=knightOnBoard[i/8][i%8];
+                     break;
+                 case "B": counter+=bishopOnBoard[i/8][i%8];
+                     break;
+                 case "Q": counter+=queenOnBoard[i/8][i%8];
+                     break;
+                 case "A": if (material>=1750) {counter+=kingMidBoard[i/8][i%8]; counter+=ABChess.possibleA(ABChess.kingPositionC).length()*10;} else
+                 {counter+=kingEndBoard[i/8][i%8]; counter+=ABChess.possibleA(ABChess.kingPositionC).length()*30;}
+                     break;
+             }
+         }
+         return counter;
     }
    
-    public static int rateMaterial() {
-        int counter=0, bishopCounter=0;
-       
-        for (int i=0;i<64;i++) {
-            switch (ABChess.chessBoard[i/8][i%8]) {
-                case "P": counter+=100;
-                    break;
-                case "R": counter+=500;
-                    break;
-                case "K": counter+=300;
-                    break;
-                case "B": bishopCounter+=1;
-                    break;
-                case "Q": counter+=900;
-                    break;
-            }
-        }
-        if (bishopCounter>=2) {
-            counter+=300*bishopCounter;
-        } else {
-            if (bishopCounter==1) {counter+=250;}
-        }
-        return counter;
-    }
-   
- public static int rateMoveablitly(int listLength, int depth, int material) {
-        int counter=0;
-        counter+=listLength;//5 pointer per valid move
-        if (listLength==0) {//current side is in checkmate or stalemate
-            if (!ABChess.kingSafe()) {//if checkmate
-                counter+=-200000*depth;
-            } else {//if stalemate
-                counter+=-150000*depth;
-            }
-        }
-        return counter;
-    }
-   
- public static int ratePositional(int material) {
-        int counter=0;
-       
-        for (int i=0;i<64;i++) {
-            switch (ABChess.chessBoard[i/8][i%8]) {
-                case "P": counter+=pawnBoard[i/8][i%8];
-                    break;
-                case "R": counter+=rookBoard[i/8][i%8];
-                    break;
-                case "K": counter+=knightBoard[i/8][i%8];
-                    break;
-                case "B": counter+=bishopBoard[i/8][i%8];
-                    break;
-                case "Q": counter+=queenBoard[i/8][i%8];
-                    break;
-                case "A": 
-                	if (material>=1750) {
-                		counter+=kingMidBoard[i/8][i%8]; 
-                		counter+=ABChess.possibleA(ABChess.kingPositionC).length()*10;
-                	} else{
-                		counter+=kingEndBoard[i/8][i%8]; counter+=ABChess.possibleA(ABChess.kingPositionC).length()*30;}
-                		break;
-            }
-        }
-        return counter;
-    }
 }

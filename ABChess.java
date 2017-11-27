@@ -25,7 +25,7 @@ public class ABChess {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UserInterface ui=new UserInterface();
         f.add(ui);
-        f.setSize(500, 500);
+        f.setSize(528, 557);
         f.setVisible(true);
         
         System.out.println(posibleMoves());
@@ -48,7 +48,7 @@ public class ABChess {
 	public static String alphaBeta(int depth, int beta, int alpha, String move, int player) {
 		//return in the form of 1234b##########
 		String list=posibleMoves();
-		if (depth==0 || list.length()==0) {return move+(Rating.rating(list.length(), depth)*(player*2-1));}
+		if (depth==0 || list.length()==0) {return move+(Rating.rate(list.length(), depth)*(player*2-1));}
 		list=sort(list);
 		player=1-player;	//either 1 or 0
 		
@@ -497,7 +497,7 @@ public class ABChess {
         int[] score=new int [list.length()/5];
         for (int i=0;i<list.length();i+=5) {
             makeMove(list.substring(i, i+5));
-            score[i/5]=-Rating.rating(-1, 0);
+            score[i/5]=-Rating.rate(-1, 0);
             undoMove(list.substring(i, i+5));
         }
         String newListA="", newListB=list;
